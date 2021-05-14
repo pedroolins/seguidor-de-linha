@@ -1,0 +1,111 @@
+//--------------------------------------------------------------
+// Código versão 1.0 seguidor de linha
+// Autor: Pedro Lins
+// Código robô seguidor de linha
+//--------------------------------------------------------------
+
+//Definindo as portas
+#define motorA_pwm 6
+#define motorB_pwm 7
+#define motorA_sentido1 5
+#define motorA_sentido2 4
+#define motorB_sentido1 3
+#define motorB_sentido2 2
+
+//Definindo as velocidades que irão atuar nos motores
+#define v1 0
+#define v2 80
+#define v3 180
+#define v4 255
+
+//Definido os sensores
+#define sensor_direita 8
+#define sensor_esquerda 10
+
+// declarando variáveis que serão utilizados pelos sensores
+bool direita;
+bool esquerda;
+
+void setup(){
+  
+  //Configurando as portas de sáida que iremos utilizar
+  pinMode(motorA_pwm, OUTPUT);
+  pinMode(motorB_pwm, OUTPUT);
+  pinMode(motorA_sentido1, OUTPUT);
+  pinMode(motorA_sentido2, OUTPUT);
+  pinMode(motorB_sentido1, OUTPUT);
+  pinMode(motorB_sentido2, OUTPUT);
+  
+  //Configurando as portas de entrada
+  pinMode(sensor_direita, INPUT);
+  pinMode(sensor_esquerda, INPUT);
+  
+}
+
+void loop(){
+  sentido_motores_frente();
+  int valor = leitura_sensor(sensor_esquerda,sensor_direita);
+  controla_motor(valor);
+}
+
+// Função que lê e iterpreta os dados enviados pelos sensores
+int leitura_sensor(int sensor_e, int sensor_d){
+  //variáveis recebem os parâmetros
+  direita = digitalRead(sensor_d);
+  esquerda = digitalRead(sensor_e);
+  //criando condicionais para controlar os motores
+  //sensores não detectam linha ou seja velocidade max
+  if (direita == false && esquerda == false){
+    // vai indicar que os dois motores usem velocidade max
+    return 1;
+  }
+  //sensor direita detecta linha e corrigi velocidade motor
+  else if(direita == true && esquerda == false){
+    //vai indicar que o motor da esquerda rodar mais rápido
+    return 2;
+  }
+  //sensor esquerda detecta linha e corrigi velocidade do motor
+  else if(direita == false && esquerda == true){
+    // vai indicar motor direita rodar mais rápido que outro
+    return 3; 
+  }
+  //os dois sensores detectam a linha
+  else if(direita == true && esquerda == true){
+    return 4;
+  }
+}
+
+//Função que irá controlar velocidade do motor
+void controla_motor(int valor){
+  int valor_return = valor;
+  //condicionais para alterar velocidade a partir do valor_return
+  if(valor_return == 1){
+    //define velocidade masx dos motores
+    analogWrite(motorA_pwm, v4);
+    analogWrite(motorB_pwm, v4);
+  }
+  else if(valor_return == 2){
+    //define velocidade para fazer curva a direita
+    analogWrite(motorA_pwm, v2);
+    analogWrite(motorB_pwm, v3);
+  }
+  else if(valor_return == 3){
+    //define velocidade para fazer curva a esquerda
+    analogWrite(motorA_pwm, v3);
+    analogWrite(motorB_pwm, v2);
+  }
+  else if(valor_return == 4) {
+    //define velocidade dos motores
+    analogWrite(motorA_pwm, v1);
+    analogWrite(motorB_pwm, v1);
+  }
+}
+
+//função que define o sentido dos motores para frente
+void sentido_motores_frente(){
+    //define os sentidos dos motores
+    digitalWrite(motorA_sentido1, HIGH);
+    digitalWrite(motorA_sentido2, LOW);
+    digitalWrite(motorB_sentido1, HIGH);
+    digitalWrite(motorB_sentido2, LOW);
+}
